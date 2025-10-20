@@ -24,7 +24,7 @@ module.exports = {
   ],
   rules: {
     'no-shadow': 'off',
-    'no-console': 'warn',
+    'no-console': 'off',
     'complexity': 'warn',
     'no-continue': 'off',
     'no-plusplus': 'off',
