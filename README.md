@@ -26,5 +26,6 @@ docker exec -it 99tech_test_mongodb mongosh -u root -p example
 Run the script `npm run p4` to see the result of problem 4.
 
 ### Problem 5: A Crud Server
+Run the script `npm run p5` to run the CRUD server.
 
 ### Problem 6: Architecture
