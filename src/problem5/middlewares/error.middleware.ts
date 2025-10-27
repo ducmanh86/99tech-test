@@ -6,6 +6,7 @@ export class HttpError extends Error {
   constructor(
     public statusCode: number,
     message: string,
+    public detail?: any,
   ) {
     super(message);
     this.name = 'HttpError';
@@ -29,6 +30,23 @@ export class BadRequestError extends HttpError {
   }
 }
 
+export class ConflictError extends HttpError {
+  constructor(message = 'Conflict') {
+    super(409, message);
+    this.name = 'ConflictError';
+    Object.setPrototypeOf(this, ConflictError.prototype);
+  }
+}
+
+export class ValidationError extends HttpError {
+  constructor(message = 'Validation', detail: any) {
+    super(422, message, detail);
+    this.name = 'ValidationError';
+    this.detail = detail;
+    Object.setPrototypeOf(this, ValidationError.prototype);
+  }
+}
+
 export class UnauthorizedError extends HttpError {
   constructor(message = 'Unauthorized') {
     super(401, message);
@@ -40,12 +58,13 @@ export class UnauthorizedError extends HttpError {
 export interface ErrorResponse {
   success: boolean;
   message: string;
+  detail?: any;
   error?: string;
   stack?: string;
 }
 
 const errorMiddleware: ErrorRequestHandler = (
-  err: Error | HttpError,
+  err: HttpError,
   req: Request,
   res: Response<ErrorResponse>,
   _next: NextFunction,
@@ -54,6 +73,7 @@ const errorMiddleware: ErrorRequestHandler = (
   const errorResponse: ErrorResponse = {
     success: false,
     message: err.message || 'Internal server error',
+    detail: err.detail,
   };
 
   // Add stack trace in development environment
@@ -63,7 +83,7 @@ const errorMiddleware: ErrorRequestHandler = (
   }
 
   // Log error details
-  req.log.error(`[${new Date().toISOString()}] ${err.name}: ${err.message}`);
+  req.log.error(`${err.name}: ${err.message}`);
   if (isDev()) req.log.error(err.stack);
 
   res.status(statusCode).json(errorResponse);

@@ -1,29 +1,41 @@
 import { ObjectId } from 'mongodb';
 
-import { User } from './entities/user.entity';
+import { UserEntity } from './entities/user.entity';
 import { AppDataSource } from '../../configs/database';
 import { NotFoundError } from '../../middlewares/error.middleware';
 
-const userRepository = AppDataSource.getMongoRepository(User);
+const userRepository = AppDataSource.getMongoRepository(UserEntity);
 
 export const getAllUsers = () => {
   return userRepository.find();
 };
 
-export const createUser = (userData: Pick<User, 'firstName' | 'lastName' | 'email'>) => {
-  const user = new User();
+export const createUser = (userData: Pick<UserEntity, 'firstName' | 'lastName' | 'email'>) => {
+  const user = new UserEntity();
   Object.assign(user, userData);
 
   return userRepository.save(user);
 };
 
-export const updateUser = async (userId: ObjectId, userData: Pick<User, 'firstName' | 'lastName'>) => {
+export const getUser = async (userId: ObjectId) => {
   const user = await userRepository.findOne({ where: { _id: userId } });
   if (!user) {
     throw new NotFoundError('User not found');
   }
 
-  await userRepository.update(userId, userData);
+  return user;
+};
+
+export const updateUser = async (userId: ObjectId, userData: Pick<UserEntity, 'firstName' | 'lastName'>) => {
+  const user = await userRepository.findOne({ where: { _id: userId } });
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  await userRepository.update(userId, {
+    ...userData,
+    lastModifiedAt: new Date(),
+  });
 
   Object.assign(user, userData);
   return user;
@@ -37,16 +49,32 @@ export const deleteUser = async (userId: ObjectId) => {
   }
 
   // await userRepository.delete(userId); // hard delete
-  await userRepository.update(userId, { deletedAt: new Date() });
+  await userRepository.update(userId, {
+    deletedAt: new Date(),
+    lastModifiedAt: new Date(),
+  });
 };
 
 // restore a soft deleted item by setting deletedAt to null
 export const restoreUser = async (userId: ObjectId) => {
-  const user = await userRepository.findOne({ where: { _id: userId, deletedAt: { $ne: null } }, withDeleted: true });
+  const user = await userRepository.findOne({
+    where: { _id: userId, deletedAt: { $ne: undefined } },
+    withDeleted: true,
+  });
   if (!user) {
-    throw new NotFoundError('User not valid for recovery');
+    throw new NotFoundError('User not found or invalid for recovery');
   }
 
-  // await userRepository.delete(userId); // hard delete
-  await userRepository.update(userId, { deletedAt: null });
+  delete user.deletedAt;
+  user.lastModifiedAt = new Date();
+
+  await userRepository.updateOne(
+    { _id: userId },
+    {
+      $unset: { deletedAt: '' },
+      $set: { lastModifiedAt: user.lastModifiedAt },
+    },
+  );
+
+  return user;
 };

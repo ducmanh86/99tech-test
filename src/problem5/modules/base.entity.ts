@@ -11,6 +11,6 @@ export class Base extends BaseEntity {
   @UpdateDateColumn()
   lastModifiedAt?: Date;
 
-  @DeleteDateColumn({ nullable: true })
-  deletedAt?: Date | null;
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
