@@ -29,3 +29,4 @@ Run the script `npm run p4` to see the result of problem 4.
 Run the script `npm run p5` to run the CRUD server.
 
 ### Problem 6: Architecture
+Go to [src/problem6/README.md](src/problem6/README.md) to see the architecture documentation for problem 6.
