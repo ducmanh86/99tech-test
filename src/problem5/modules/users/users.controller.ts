@@ -6,13 +6,14 @@ import { updateUserDto } from './dtos/update-user.dto';
 import { validateRequest } from '../../middlewares/validate.middleware';
 import { createUser, deleteUser, getAllUsers, getUser, restoreUser, updateUser } from './users.service';
 import { UserResponse } from './responses/user.response';
-import { ConflictError, NotFoundError, ValidationError } from '../../middlewares/error.middleware';
+import { ConflictError, ValidationError } from '../../middlewares/error.middleware';
+import { filterUserDto, paginationParamDto } from './dtos/filter-user.dto';
 
 const router = Router();
 
 // Get all users
-router.get('/', async (req, res) => {
-  const users = await getAllUsers();
+router.get('/', validateRequest(paginationParamDto), validateRequest(filterUserDto), async (req, res) => {
+  const users = await getAllUsers(req.body, req.query);
   res.json({
     data: UserResponse.fromUserList(users),
     success: true,
@@ -26,7 +27,7 @@ router.post('/', validateRequest(createUserDto), async (req, res) => {
     const savedUser = await createUser(req.body);
     res.status(201).json({
       success: true,
-      data: savedUser,
+      data: new UserResponse(savedUser),
     });
   } catch (error) {
     // Check for duplicate key error (email must be unique)

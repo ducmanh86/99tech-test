@@ -3,11 +3,47 @@ import { ObjectId } from 'mongodb';
 import { UserEntity } from './entities/user.entity';
 import { AppDataSource } from '../../configs/database';
 import { NotFoundError } from '../../middlewares/error.middleware';
+import { FilterUserDto, PaginationParamDto } from './dtos/filter-user.dto';
 
 const userRepository = AppDataSource.getMongoRepository(UserEntity);
 
-export const getAllUsers = () => {
-  return userRepository.find();
+export const getAllUsers = (filter: FilterUserDto, pagination: PaginationParamDto) => {
+  const where: any = {};
+
+  if (filter?.firstName) {
+    where.firstName = { $regex: new RegExp(filter.firstName, 'i') };
+  }
+  if (filter?.lastName) {
+    where.lastName = { $regex: new RegExp(filter.lastName, 'i') };
+  }
+  if (filter?.email) {
+    // Allow partial, case-insensitive match on email as well
+    where.email = { $regex: new RegExp(filter.email, 'i') };
+  }
+
+  const order: any = {};
+  if (pagination?.sortBy) {
+    order[pagination.sortBy] = pagination?.sortOrder === 'desc' ? 'DESC' : 'ASC';
+  }
+
+  const findOptions: any = {
+    where,
+  };
+
+  const offset = pagination?.offset !== undefined ? Number(pagination.offset) : undefined;
+  const limit = pagination?.limit !== undefined ? Number(pagination.limit) : undefined;
+
+  if (offset !== undefined && !Number.isNaN(offset)) {
+    findOptions.skip = offset;
+  }
+  if (limit !== undefined && !Number.isNaN(limit)) {
+    findOptions.take = limit;
+  }
+  if (Object.keys(order).length) {
+    findOptions.order = order;
+  }
+
+  return userRepository.find(findOptions);
 };
 
 export const createUser = (userData: Pick<UserEntity, 'firstName' | 'lastName' | 'email'>) => {
