@@ -13,7 +13,8 @@
   "scripts": {
     "p4": "ts-node src/problem4/index.ts",
     "p5": "nodemon --watch 'src/problem5/*' --exec ts-node src/problem5/index.ts",
-    "start": "ts-node src/problem5/index.ts"
+    "test": "jest --runInBand",
+    "lint": "eslint \"src/**/*.ts\" --fix"
   },
   "dependencies": {
     "compression": "^1.8.1",
@@ -32,17 +33,22 @@
   "devDependencies": {
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.3",
+    "@types/jest": "^29.5.14",
     "@types/node": "^24.9.0",
+    "@types/supertest": "^6.0.2",
     "@types/uuid": "^11.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.46.1",
-    "@typescript-eslint/parser": "^8.46.1",
-    "eslint": "^9.38.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-prettier": "^5.5.4",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-security": "^3.0.1",
+    "jest": "^29.7.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
